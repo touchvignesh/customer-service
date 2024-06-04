@@ -1,41 +1,31 @@
 services:
 
-  order-service:
-    image: order-service:latest
+  customer-service:
+    image: customer-service:latest
     ports:
-      - "8180:8080"
+      - "8280:8080"
     depends_on:
-      - mongo
+      - neo4j
     environment:
       TZ: Asia/Kolkata
 
-  mongo:
-    image: mongo
-    restart: always
+  neo4j:
+    container_name: neo4j
+    image: neo4j:latest
     ports:
-      - 27017:27017
+      - 7574:7474
+      - 7787:7687
     environment:
-      TZ: Asia/Kolkata
-      MONGO_INITDB_ROOT_USERNAME: mongo
-      MONGO_INITDB_ROOT_PASSWORD: mongo123
+      - NEO4J_AUTH=neo4j/${NEO4J_PASSWORD}
+      - NEO4J_apoc_export_file_enabled=true
+      - NEO4J_apoc_import_file_enabled=true
+      - NEO4J_apoc_import_file_use__neo4j__config=true
+      - NEO4J_PLUGINS=["apoc", "graph-data-science"]
     volumes:
-      - ../../data/order-service/mongo/db:/data/db
-      - ../../data/order-service/mongo/configdb:/data/configdb
-
-  mongo-express:
-    image: mongo-express
-    restart: always
-    depends_on:
-      - mongo
-    ports:
-      - 8081:8081
-    environment:
-      TZ: Asia/Kolkata
-      ME_CONFIG_BASICAUTH_USERNAME: admin
-      ME_CONFIG_BASICAUTH_PASSWORD: admin
-      ME_CONFIG_MONGODB_ADMINUSERNAME: mongo
-      ME_CONFIG_MONGODB_ADMINPASSWORD: mongo123
-      ME_CONFIG_MONGODB_URL: mongodb://mongo:mongo123@mongo:27017/
+      - ../../data/customer-service/data:/data
+      - ../../data/customer-service/logs:/logs
+      - ../../data/customer-service/import:/var/lib/neo4j/import
+      - ../../data/customer-service/plugins:/plugins
 
 networks:
   default:
