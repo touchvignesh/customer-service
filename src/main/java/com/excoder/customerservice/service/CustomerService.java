@@ -30,6 +30,10 @@ public class CustomerService {
         return customerRepository.findAll();
     }
 
+    public Optional<Customer> getCustomerById(Long id){
+        return customerRepository.findById(id);
+    }
+
     public Customer addCustomer(Customer customer){
         customerRepository.save(customer);
         var message_success = kafkaTemplate.send(customerTopic, customer);

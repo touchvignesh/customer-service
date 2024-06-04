@@ -29,6 +29,12 @@ public class CustomerController {
         return customerService.getAllCustomers();
     }
 
+    // find customer by customer Id
+    @GetMapping("/list/id/{id}")
+    public Optional<Customer> findCustomerById(@PathVariable Long id) {
+        return customerService.getCustomerById(id);
+    }
+
     // create a new customer
     @ResponseStatus(HttpStatus.CREATED) // 201
     @PostMapping("/create")
