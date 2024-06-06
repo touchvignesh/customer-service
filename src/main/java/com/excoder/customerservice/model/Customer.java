@@ -1,15 +1,14 @@
 package com.excoder.customerservice.model;
 
-import lombok.*;
+import java.time.LocalDate;
+import java.util.List;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 import org.springframework.data.annotation.Id;
-import org.springframework.data.neo4j.core.schema.GeneratedValue;
 import org.springframework.data.neo4j.core.schema.Node;
 import org.springframework.data.neo4j.core.schema.Property;
 import org.springframework.data.neo4j.core.schema.Relationship;
-
-import java.math.BigDecimal;
-import java.util.List;
-import java.time.LocalDate;
 
 @Data
 @AllArgsConstructor
@@ -31,6 +30,4 @@ public class Customer {
 
     @Relationship(type = "ORDERED")
     private List<Order> orders;
-
 }
-

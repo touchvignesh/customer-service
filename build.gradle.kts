@@ -2,6 +2,7 @@ plugins {
     java
     id("org.springframework.boot") version "3.2.5"
     id("io.spring.dependency-management") version "1.1.4"
+    id("com.diffplug.spotless") version "6.25.0"
 }
 
 group = "com.excoder"
@@ -37,4 +38,21 @@ tasks.bootJar {
 }
 tasks.named<Jar>("jar") {
     enabled = false
+}
+
+spotless {
+    java {
+        target("**/*.java")
+        targetExclude("${layout.buildDirectory}/**/*.java")
+        replaceRegex("Remove wildcard import statements", "import\\s+(?:static\\s+)?[^\\*\\s]+\\*;(\\r\\n|\\r|\\n)", "$1")
+        toggleOffOn()
+        palantirJavaFormat()
+        removeUnusedImports()
+        trimTrailingWhitespace()
+        endWithNewline()
+    }
+    kotlinGradle {
+        target("*.gradle.kts")
+        ktlint("1.2.1") // Apply ktlint to Gradle Kotlin scripts
+    }
 }

@@ -2,16 +2,19 @@ package com.excoder.customerservice.service;
 
 import com.excoder.customerservice.model.Customer;
 import com.excoder.customerservice.repository.CustomerRepository;
+import java.util.List;
+import java.util.Optional;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
-import java.util.Optional;
-
 @Service
 public class CustomerService {
+
+    private static final Logger log = LoggerFactory.getLogger(CustomerService.class);
 
     @Autowired
     private KafkaTemplate<String, Customer> kafkaTemplate;
@@ -26,32 +29,31 @@ public class CustomerService {
         this.customerRepository = customerRepository;
     }
 
-    public List<Customer> getAllCustomers(){
+    public List<Customer> getAllCustomers() {
         return customerRepository.findAll();
     }
 
-    public Optional<Customer> getCustomerById(Long id){
+    public Optional<Customer> getCustomerById(Long id) {
         return customerRepository.findById(id);
     }
 
-    public Customer addCustomer(Customer customer){
+    public Customer addCustomer(Customer customer) {
         customerRepository.save(customer);
-        var message_success = kafkaTemplate.send(customerTopic, customer);
-        message_success.whenComplete((sendResult, exception) -> {
+        var successMessage = kafkaTemplate.send(customerTopic, customer);
+        successMessage.whenComplete((sendResult, exception) -> {
             if (exception != null) {
-                message_success.completeExceptionally(exception);
+                successMessage.completeExceptionally(exception);
             } else {
-                message_success.complete(sendResult);
+                successMessage.complete(sendResult);
             }
-            System.out.println(sendResult);
+            log.info(String.valueOf(sendResult));
         });
         return customer;
-
     }
 
-    public Customer updateCustomer(Customer customer)  {
-        Optional<Customer> customerFromDB= customerRepository.findById(customer.getCustomerId());
-        if(customerFromDB.isPresent()){
+    public Customer updateCustomer(Customer customer) {
+        Optional<Customer> customerFromDB = customerRepository.findById(customer.getCustomerId());
+        if (customerFromDB.isPresent()) {
             Customer customerFromDBVal = customerFromDB.get();
             customerFromDBVal.setOrders(customer.getOrders());
             customerFromDBVal.setCustomerId(customer.getCustomerId());
@@ -59,16 +61,16 @@ public class CustomerService {
             customerFromDBVal.setLastName(customer.getLastName());
             customerFromDBVal.setCreatedDate(customer.getCreatedDate());
             customerRepository.save(customerFromDBVal);
-            var message_success = kafkaTemplate.send(customerTopic, customer);
-            message_success.whenComplete((sendResult, exception) -> {
+            var successMessage = kafkaTemplate.send(customerTopic, customer);
+            successMessage.whenComplete((sendResult, exception) -> {
                 if (exception != null) {
-                    message_success.completeExceptionally(exception);
+                    successMessage.completeExceptionally(exception);
                 } else {
-                    message_success.complete(sendResult);
+                    successMessage.complete(sendResult);
                 }
-                System.out.println(sendResult);
+                log.info(String.valueOf(sendResult));
             });
-        }else{
+        } else {
             return null;
         }
         return customer;
