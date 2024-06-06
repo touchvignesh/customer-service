@@ -1,5 +1,6 @@
 package com.excoder.customerservice.controller;
 
+import com.excoder.customerservice.dto.CustomerDTO;
 import com.excoder.customerservice.model.Customer;
 import com.excoder.customerservice.service.CustomerService;
 import java.util.List;
@@ -44,14 +45,14 @@ public class CustomerController {
     // create a new customer
     @ResponseStatus(HttpStatus.CREATED) // 201
     @PostMapping("/create")
-    public Customer create(@RequestBody Customer customer) {
-        return customerService.addCustomer(customer);
+    public CustomerDTO create(@RequestBody CustomerDTO customerDTO) {
+        return customerService.addCustomer(customerDTO);
     }
 
     // update a customer
     @PutMapping("/update")
-    public Customer update(@RequestBody Customer customer) {
-        return customerService.updateCustomer(customer);
+    public CustomerDTO update(@RequestBody CustomerDTO customerDTO) {
+        return customerService.updateCustomer(customerDTO);
     }
 
     // delete a customer

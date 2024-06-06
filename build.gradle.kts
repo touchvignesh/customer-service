@@ -24,6 +24,7 @@ dependencies {
     implementation("org.projectlombok:lombok")
     annotationProcessor("org.projectlombok:lombok")
     runtimeOnly("org.springframework.boot:spring-boot-devtools")
+    implementation("org.modelmapper:modelmapper:3.2.0")
 
     testImplementation("org.springframework.boot:spring-boot-starter-test")
     // testImplementation("org.neo4j.test:neo4j-harness")

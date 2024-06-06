@@ -1,5 +1,7 @@
 package com.excoder.customerservice.service;
 
+import com.excoder.customerservice.component.CustomerConverter;
+import com.excoder.customerservice.dto.CustomerDTO;
 import com.excoder.customerservice.model.Customer;
 import com.excoder.customerservice.repository.CustomerRepository;
 import java.util.List;
@@ -15,6 +17,9 @@ import org.springframework.stereotype.Service;
 public class CustomerService {
 
     private static final Logger log = LoggerFactory.getLogger(CustomerService.class);
+
+    @Autowired
+    CustomerConverter customerConverter;
 
     @Autowired
     private KafkaTemplate<String, Customer> kafkaTemplate;
@@ -37,8 +42,9 @@ public class CustomerService {
         return customerRepository.findById(id);
     }
 
-    public Customer addCustomer(Customer customer) {
-        customerRepository.save(customer);
+    public CustomerDTO addCustomer(CustomerDTO customerDTO) {
+        Customer customer = customerConverter.convertCustomerDtoToEntity(customerDTO);
+        customer = customerRepository.save(customer);
         var successMessage = kafkaTemplate.send(customerTopic, customer);
         successMessage.whenComplete((sendResult, exception) -> {
             if (exception != null) {
@@ -48,19 +54,20 @@ public class CustomerService {
             }
             log.info(String.valueOf(sendResult));
         });
-        return customer;
+        return customerConverter.convertCustomerEntityToDto(customer);
     }
 
-    public Customer updateCustomer(Customer customer) {
-        Optional<Customer> customerFromDB = customerRepository.findById(customer.getCustomerId());
+    public CustomerDTO updateCustomer(CustomerDTO customerDTO) {
+        Optional<Customer> customerFromDB = customerRepository.findById(customerDTO.getCustomerId());
         if (customerFromDB.isPresent()) {
             Customer customerFromDBVal = customerFromDB.get();
-            customerFromDBVal.setOrders(customer.getOrders());
-            customerFromDBVal.setCustomerId(customer.getCustomerId());
-            customerFromDBVal.setFirstName(customer.getFirstName());
-            customerFromDBVal.setLastName(customer.getLastName());
-            customerFromDBVal.setCreatedDate(customer.getCreatedDate());
-            customerRepository.save(customerFromDBVal);
+            customerFromDBVal.setOrders(customerDTO.getOrders());
+            customerFromDBVal.setCustomerId(customerDTO.getCustomerId());
+            customerFromDBVal.setFirstName(customerDTO.getFirstName());
+            customerFromDBVal.setLastName(customerDTO.getLastName());
+            customerFromDBVal.setCreatedDate(customerDTO.getCreatedDate());
+            Customer customer = customerConverter.convertCustomerDtoToEntity(customerDTO);
+            customer = customerRepository.save(customer);
             var successMessage = kafkaTemplate.send(customerTopic, customer);
             successMessage.whenComplete((sendResult, exception) -> {
                 if (exception != null) {
@@ -70,10 +77,11 @@ public class CustomerService {
                 }
                 log.info(String.valueOf(sendResult));
             });
+
+            return customerConverter.convertCustomerEntityToDto(customer);
         } else {
             return null;
         }
-        return customer;
     }
 
     public void deleteCustomer(Long id) {
